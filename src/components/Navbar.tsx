@@ -1,147 +1,460 @@
-import { useEffect, useState } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
-import { FiDownload } from 'react-icons/fi'
-import { NAV_LINKS } from '../data'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  FiGithub,
+  FiLinkedin,
+  FiInstagram,
+  FiMenu,
+  FiX,
+} from 'react-icons/fi'
 
-const NAV_H = 64
+import { useEffect, useState } from 'react'
+
+const LINKS = [
+  { name: 'Home', href: '#home' },
+  { name: 'About', href: '#about' },
+  { name: 'Projects', href: '#projects' },
+  { name: 'Skills', href: '#skills' },
+  { name: 'Experience', href: '#experience' },
+  { name: 'Contact', href: '#contact' },
+  {
+  name: 'Certifications',
+  href: '#certifications',
+  }
+]
 
 export default function Navbar() {
-  const [active, setActive] = useState('')
-  const { scrollY } = useScroll()
-  const blur = useTransform(scrollY, [0, 80], [0, 14])
+  const [scrolled, setScrolled] = useState(false)
+  const [mobileMenu, setMobileMenu] = useState(false)
 
-  // highlight active section on scroll
   useEffect(() => {
-    const ids = NAV_LINKS.map(l => l.href.slice(1))
-    const handler = () => {
-      const scrollPos = window.scrollY + NAV_H + 32
-      let current = ''
-      for (const id of ids) {
-        const el = document.getElementById(id)
-        if (el && el.offsetTop <= scrollPos) current = id
-      }
-      setActive(current)
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 30)
     }
-    window.addEventListener('scroll', handler, { passive: true })
-    handler()
-    return () => window.removeEventListener('scroll', handler)
+
+    window.addEventListener('scroll', handleScroll)
+
+    return () =>
+      window.removeEventListener('scroll', handleScroll)
   }, [])
 
   return (
-    <motion.header
-      style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
-        height: NAV_H,
-      }}
-      initial={{ y: -NAV_H, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: 'easeOut' }}
-    >
-      {/* blurred backdrop grows on scroll */}
-      <motion.div
-        style={{
-          position: 'absolute', inset: 0,
-          background: 'rgba(3,3,9,0.72)',
-          backdropFilter: `blur(${blur}px)`,
-          WebkitBackdropFilter: `blur(${blur}px)` as any,
-          borderBottom: '1px solid rgba(168,85,247,0.12)',
+    <>
+      {/* NAVBAR */}
+      <motion.nav
+        initial={{ opacity: 0, y: -100 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: 1,
+          ease: [0.22, 1, 0.36, 1],
         }}
-      />
-
-      <nav
         style={{
-          position: 'relative',
-          maxWidth: 1160, margin: '0 auto', height: '100%',
-          padding: '0 24px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          position: 'fixed',
+          top: 20,
+          left: 0,
+          right: 0,
+          zIndex: 9999,
+          display: 'flex',
+          justifyContent: 'center',
+          padding: '0 18px',
+          pointerEvents: 'none',
         }}
       >
-        {/* Logo */}
-        <a
-          href="#"
+        {/* WRAPPER */}
+        <div
           style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 18, fontWeight: 700, letterSpacing: '0.06em',
-            background: 'linear-gradient(135deg, #a855f7, #22d3ee)',
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            width: '100%',
+            maxWidth: 1450,
+            position: 'relative',
+            pointerEvents: 'auto',
           }}
         >
-          &lt;OB /&gt;
-        </a>
-
-        {/* Nav links */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          {NAV_LINKS.map(({ label, href }) => {
-            const id = href.slice(1)
-            const isActive = active === id
-            return (
-              <a
-                key={label}
-                href={href}
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 13, letterSpacing: '0.08em',
-                  padding: '6px 14px', borderRadius: 6,
-                  color: isActive ? '#fff' : 'rgba(240,240,255,0.55)',
-                  background: isActive ? 'rgba(168,85,247,0.14)' : 'transparent',
-                  border: `1px solid ${isActive ? 'rgba(168,85,247,0.35)' : 'transparent'}`,
-                  transition: 'all 0.25s',
-                  textShadow: isActive ? '0 0 12px rgba(168,85,247,0.6)' : 'none',
-                }}
-                onMouseEnter={e => {
-                  if (!isActive) {
-                    const el = e.currentTarget as HTMLElement
-                    el.style.color = '#fff'
-                    el.style.background = 'rgba(168,85,247,0.08)'
-                    el.style.borderColor = 'rgba(168,85,247,0.2)'
-                  }
-                }}
-                onMouseLeave={e => {
-                  if (!isActive) {
-                    const el = e.currentTarget as HTMLElement
-                    el.style.color = 'rgba(240,240,255,0.55)'
-                    el.style.background = 'transparent'
-                    el.style.borderColor = 'transparent'
-                  }
-                }}
-              >
-                {label}
-              </a>
-            )
-          })}
-
-          {/* Resume CTA */}
-          <a
-            href="/resume.pdf"
-            download
+          {/* BACKGROUND GLOW */}
+          <motion.div
+            animate={{
+              opacity: [0.25, 0.5, 0.25],
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+            }}
             style={{
-              marginLeft: 12,
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              fontFamily: 'var(--font-mono)', fontSize: 12,
-              letterSpacing: '0.08em',
-              padding: '7px 16px', borderRadius: 7,
-              background: 'linear-gradient(135deg, rgba(168,85,247,0.2), rgba(34,211,238,0.15))',
-              border: '1px solid rgba(168,85,247,0.4)',
-              color: 'var(--purple)',
-              transition: 'all 0.25s',
-              textShadow: '0 0 10px rgba(168,85,247,0.5)',
+              position: 'absolute',
+              inset: -2,
+              borderRadius: 30,
+              background:
+                'linear-gradient(135deg,#a855f7,#22d3ee,#ffffff,#a855f7)',
+              filter: 'blur(26px)',
             }}
-            onMouseEnter={e => {
-              const el = e.currentTarget as HTMLElement
-              el.style.background = 'linear-gradient(135deg, rgba(168,85,247,0.32), rgba(34,211,238,0.24))'
-              el.style.boxShadow = '0 0 18px rgba(168,85,247,0.3)'
-            }}
-            onMouseLeave={e => {
-              const el = e.currentTarget as HTMLElement
-              el.style.background = 'linear-gradient(135deg, rgba(168,85,247,0.2), rgba(34,211,238,0.15))'
-              el.style.boxShadow = 'none'
+          />
+
+          {/* NAV CONTAINER */}
+          <div
+            style={{
+              position: 'relative',
+              height: 84,
+              borderRadius: 30,
+              overflow: 'hidden',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0 26px',
+              backdropFilter: 'blur(30px)',
+              background: scrolled
+                ? 'rgba(7,7,15,0.82)'
+                : 'rgba(7,7,15,0.58)',
+              border:
+                '1px solid rgba(255,255,255,0.08)',
+              transition: 'all 0.4s ease',
+              boxShadow: scrolled
+                ? '0 15px 80px rgba(0,0,0,0.45)'
+                : '0 10px 50px rgba(0,0,0,0.28)',
             }}
           >
-            <FiDownload size={13} />
-            Resume
-          </a>
+            {/* TOP LINE */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: '18%',
+                width: '64%',
+                height: 1,
+                background:
+                  'linear-gradient(90deg,transparent,#22d3ee,transparent)',
+              }}
+            />
+
+            {/* LEFT */}
+            <div
+              style={{
+                width: 180,
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <motion.a
+                href="#home"
+                whileHover={{
+                  scale: 1.04,
+                }}
+                style={{
+                  position: 'relative',
+                  textDecoration: 'none',
+                }}
+              >
+                {/* ORBIT */}
+                <motion.div
+                  animate={{
+                    rotate: 360,
+                  }}
+                  transition={{
+                    duration: 20,
+                    repeat: Infinity,
+                    ease: 'linear',
+                  }}
+                  style={{
+                    position: 'absolute',
+                    inset: -14,
+                    borderRadius: '50%',
+                    border:
+                      '1px solid rgba(168,85,247,0.18)',
+                  }}
+                />
+
+                <div
+                  style={{
+                    fontSize: 34,
+                    fontWeight: 900,
+                    letterSpacing: '-0.08em',
+                    background:
+                      'linear-gradient(135deg,#ffffff,#a855f7,#22d3ee)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
+                  OB.
+                </div>
+              </motion.a>
+            </div>
+
+            {/* CENTER */}
+            <div
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+              }}
+              className="desktop-links"
+            >
+              {LINKS.map((link) => (
+                <motion.a
+                  key={link.name}
+                  href={link.href}
+                  whileHover={{
+                    y: -3,
+                  }}
+                  transition={{
+                    type: 'spring',
+                    stiffness: 300,
+                  }}
+                  style={{
+                    position: 'relative',
+                    padding: '12px 18px',
+                    borderRadius: 14,
+                    textDecoration: 'none',
+                    overflow: 'hidden',
+                    color: 'rgba(240,240,255,0.82)',
+                    fontWeight: 600,
+                    fontSize: 14,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {/* HOVER */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    whileHover={{ opacity: 1 }}
+                    transition={{ duration: 0.25 }}
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      borderRadius: 14,
+                      background:
+                        'linear-gradient(135deg,rgba(168,85,247,0.16),rgba(34,211,238,0.16))',
+                      border:
+                        '1px solid rgba(255,255,255,0.08)',
+                    }}
+                  />
+
+                  <span
+                    style={{
+                      position: 'relative',
+                      zIndex: 2,
+                    }}
+                  >
+                    {link.name}
+                  </span>
+                </motion.a>
+              ))}
+            </div>
+
+            {/* RIGHT */}
+            <div
+              style={{
+                width: 260,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                gap: 12,
+              }}
+            >
+              {/* SOCIALS */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                }}
+                className="desktop-socials"
+              >
+                {[
+                  {
+                    icon: <FiGithub size={17} />,
+                    href: 'https://github.com/omkarbhete',
+                  },
+                  {
+                    icon: <FiLinkedin size={17} />,
+                    href:
+                      'https://www.linkedin.com/in/omkar-bhete-6aa356255/',
+                  },
+                  {
+                    icon: <FiInstagram size={17} />,
+                    href:
+                      'https://instagram.com/omkar_bhete',
+                  },
+                ].map((item, i) => (
+                  <motion.a
+                    key={i}
+                    href={item.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    whileHover={{
+                      scale: 1.12,
+                      y: -2,
+                    }}
+                    whileTap={{
+                      scale: 0.95,
+                    }}
+                    style={{
+                      width: 42,
+                      height: 42,
+                      borderRadius: 14,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background:
+                        'rgba(255,255,255,0.04)',
+                      border:
+                        '1px solid rgba(255,255,255,0.08)',
+                      color: '#d4d4ff',
+                      textDecoration: 'none',
+                      backdropFilter: 'blur(20px)',
+                    }}
+                  >
+                    {item.icon}
+                  </motion.a>
+                ))}
+              </div>
+
+              {/* BUTTON */}
+              <motion.a
+                href="#contact"
+                whileHover={{
+                  scale: 1.04,
+                  y: -2,
+                }}
+                whileTap={{
+                  scale: 0.96,
+                }}
+                style={{
+                  position: 'relative',
+                  overflow: 'hidden',
+                  padding: '13px 22px',
+                  borderRadius: 15,
+                  textDecoration: 'none',
+                  color: '#fff',
+                  fontWeight: 700,
+                  fontSize: 14,
+                  background:
+                    'linear-gradient(135deg,#a855f7,#22d3ee)',
+                  boxShadow:
+                    '0 0 28px rgba(168,85,247,0.35)',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {/* SHINE */}
+                <motion.div
+                  animate={{
+                    x: ['-120%', '220%'],
+                  }}
+                  transition={{
+                    duration: 2.5,
+                    repeat: Infinity,
+                    ease: 'linear',
+                  }}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '40%',
+                    height: '100%',
+                    background:
+                      'linear-gradient(90deg,transparent,rgba(255,255,255,0.5),transparent)',
+                    transform: 'skewX(-20deg)',
+                  }}
+                />
+
+                <span
+                  style={{
+                    position: 'relative',
+                    zIndex: 2,
+                  }}
+                >
+                  Let&apos;s Talk
+                </span>
+              </motion.a>
+
+              {/* MOBILE */}
+              <button
+                onClick={() =>
+                  setMobileMenu(!mobileMenu)
+                }
+                className="mobile-btn"
+                style={{
+                  display: 'none',
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#fff',
+                  cursor: 'pointer',
+                }}
+              >
+                {mobileMenu ? (
+                  <FiX size={28} />
+                ) : (
+                  <FiMenu size={28} />
+                )}
+              </button>
+            </div>
+          </div>
         </div>
-      </nav>
-    </motion.header>
+      </motion.nav>
+
+      {/* MOBILE MENU */}
+      <AnimatePresence>
+        {mobileMenu && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 9998,
+              background: 'rgba(0,0,0,0.86)',
+              backdropFilter: 'blur(30px)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <motion.div
+              initial={{
+                scale: 0.8,
+                opacity: 0,
+              }}
+              animate={{
+                scale: 1,
+                opacity: 1,
+              }}
+              exit={{
+                scale: 0.8,
+                opacity: 0,
+              }}
+              transition={{
+                duration: 0.4,
+              }}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 30,
+                alignItems: 'center',
+              }}
+            >
+              {LINKS.map((link) => (
+                <motion.a
+                  key={link.name}
+                  href={link.href}
+                  onClick={() =>
+                    setMobileMenu(false)
+                  }
+                  whileHover={{
+                    scale: 1.08,
+                  }}
+                  style={{
+                    textDecoration: 'none',
+                    color: '#fff',
+                    fontSize: 44,
+                    fontWeight: 900,
+                    letterSpacing: '-0.05em',
+                  }}
+                >
+                  {link.name}
+                </motion.a>
+              ))}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   )
 }

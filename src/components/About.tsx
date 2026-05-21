@@ -1,229 +1,466 @@
-import { motion } from 'framer-motion'
-import { useReveal } from '../hooks/useReveal'
-import SectionHeading from './SectionHeading'
-import { ABOUT_SUMMARY, TIMELINE } from '../data'
+import { motion, useMotionValue, useTransform } from 'framer-motion'
+import {
+  FiCloud,
+  FiDatabase,
+  FiCode,
+  FiServer,
+  FiCpu,
+  FiLayers,
+} from 'react-icons/fi'
+import { useRef } from 'react'
 
-function TimelineCard({ item, index }: { item: typeof TIMELINE[0]; index: number }) {
-  const { ref, inView } = useReveal(0.1)
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
-      animate={inView ? { opacity: 1, x: 0 } : {}}
-      transition={{ duration: 0.55, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
-      style={{
-        display: 'flex', gap: 20, alignItems: 'flex-start',
-        paddingBottom: 36,
-        position: 'relative',
-      }}
-    >
-      {/* Dot + line */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-        <div style={{
-          width: 14, height: 14, borderRadius: '50%',
-          background: item.color,
-          boxShadow: `0 0 12px ${item.color}, 0 0 24px ${item.color}55`,
-          border: '2px solid rgba(255,255,255,0.2)',
-          marginTop: 5, flexShrink: 0,
-        }} />
-        {index < TIMELINE.length - 1 && (
-          <div style={{
-            width: 1, flex: 1, minHeight: 40,
-            background: `linear-gradient(180deg, ${item.color}60, transparent)`,
-            marginTop: 6,
-          }} />
-        )}
-      </div>
-
-      {/* Card */}
-      <div
-        className="glass"
-        style={{
-          padding: '18px 22px', flex: 1,
-          borderColor: `${item.color}25`,
-          transition: 'border-color 0.3s, box-shadow 0.3s',
-        }}
-        onMouseEnter={e => {
-          const el = e.currentTarget as HTMLElement
-          el.style.borderColor = `${item.color}55`
-          el.style.boxShadow = `0 0 20px ${item.color}22`
-        }}
-        onMouseLeave={e => {
-          const el = e.currentTarget as HTMLElement
-          el.style.borderColor = `${item.color}25`
-          el.style.boxShadow = ''
-        }}
-      >
-        <div style={{
-          fontFamily: 'var(--font-mono)', fontSize: 10,
-          letterSpacing: '0.2em', textTransform: 'uppercase',
-          color: item.color, marginBottom: 6,
-          textShadow: `0 0 8px ${item.color}88`,
-        }}>
-          {item.year}
-        </div>
-        <div style={{ fontFamily: 'var(--font-disp)', fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
-          {item.title}
-        </div>
-        <div style={{ fontSize: 13.5, color: 'rgba(240,240,255,0.52)', lineHeight: 1.7 }}>
-          {item.body}
-        </div>
-      </div>
-    </motion.div>
-  )
-}
+const SKILLS = [
+  'AWS',
+  'Docker',
+  'Kubernetes',
+  'Terraform',
+  'Linux',
+  'CI/CD',
+  'React',
+  'Node.js',
+  'MongoDB',
+  'DevOps',
+  'Cloud',
+  'Automation',
+]
 
 export default function About() {
-  const { ref: leftRef, inView: leftIn } = useReveal()
-  const { ref: rightRef, inView: rightIn } = useReveal()
+  const cardRef = useRef<HTMLDivElement>(null)
+
+  const rotateX = useMotionValue(0)
+  const rotateY = useMotionValue(0)
+
+  const glowX = useTransform(rotateY, [-15, 15], [-40, 40])
+  const glowY = useTransform(rotateX, [-15, 15], [40, -40])
+
+  const handleMouseMove = (
+    e: React.MouseEvent<HTMLDivElement>
+  ) => {
+    const rect = cardRef.current?.getBoundingClientRect()
+
+    if (!rect) return
+
+    const width = rect.width
+    const height = rect.height
+
+    const mouseX = e.clientX - rect.left
+    const mouseY = e.clientY - rect.top
+
+    const rotateYValue = ((mouseX / width) - 0.5) * 22
+    const rotateXValue = ((mouseY / height) - 0.5) * -22
+
+    rotateX.set(rotateXValue)
+    rotateY.set(rotateYValue)
+  }
+
+  const handleMouseLeave = () => {
+    rotateX.set(0)
+    rotateY.set(0)
+  }
 
   return (
-    <section id="about" style={{ padding: '100px 24px', maxWidth: 1120, margin: '0 auto' }}>
-      <SectionHeading
-        index="01"
-        title="About Me"
-        subtitle="Cloud architect, automation engineer, and perpetual learner."
-        accent="purple"
+    <section
+      id="about"
+      style={{
+        position: 'relative',
+        overflow: 'hidden',
+        padding: '160px 24px',
+        background:
+          'radial-gradient(circle at top left, rgba(168,85,247,0.12), transparent 30%), radial-gradient(circle at bottom right, rgba(34,211,238,0.12), transparent 30%)',
+      }}
+    >
+      {/* Animated Background Orbs */}
+      <motion.div
+        animate={{
+          y: [0, -40, 0],
+          x: [0, 20, 0],
+        }}
+        transition={{
+          duration: 10,
+          repeat: Infinity,
+        }}
+        style={{
+          position: 'absolute',
+          top: -100,
+          left: -100,
+          width: 400,
+          height: 400,
+          borderRadius: '50%',
+          background: 'rgba(168,85,247,0.18)',
+          filter: 'blur(120px)',
+        }}
       />
 
-      {/* Two-column: avatar | summary */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.5fr)',
-        gap: 48, marginBottom: 80, alignItems: 'center',
-      }}
-        className="about-grid"
+      <motion.div
+        animate={{
+          y: [0, 40, 0],
+          x: [0, -20, 0],
+        }}
+        transition={{
+          duration: 12,
+          repeat: Infinity,
+        }}
+        style={{
+          position: 'absolute',
+          bottom: -120,
+          right: -120,
+          width: 450,
+          height: 450,
+          borderRadius: '50%',
+          background: 'rgba(34,211,238,0.15)',
+          filter: 'blur(140px)',
+        }}
+      />
+
+      <div
+        style={{
+          maxWidth: 1350,
+          margin: '0 auto',
+          position: 'relative',
+          zIndex: 2,
+        }}
       >
-        {/* Left — avatar */}
+        {/* Massive Heading */}
         <motion.div
-          ref={leftRef}
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={leftIn ? { opacity: 1, scale: 1 } : {}}
-          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-          style={{ display: 'flex', justifyContent: 'center' }}
+          initial={{ opacity: 0, y: 80 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1 }}
+          viewport={{ once: true }}
+          style={{
+            marginBottom: 110,
+          }}
         >
-          <div style={{ position: 'relative', width: 240, height: 240 }}>
-            {/* Rotating ring */}
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
+          <div
+            style={{
+              fontFamily: 'var(--font-mono)',
+              color: '#22d3ee',
+              letterSpacing: '0.35em',
+              fontSize: 13,
+              marginBottom: 26,
+            }}
+          >
+            / ABOUT ME
+          </div>
+
+          <motion.h2
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1 }}
+            viewport={{ once: true }}
+            style={{
+              fontSize: 'clamp(70px,10vw,150px)',
+              lineHeight: 0.9,
+              fontWeight: 900,
+              letterSpacing: '-0.07em',
+              marginBottom: 40,
+              background:
+                'linear-gradient(135deg,#ffffff,#a855f7,#22d3ee)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            FUTURE
+            <br />
+            ENGINEER
+          </motion.h2>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 1 }}
+            viewport={{ once: true }}
+            style={{
+              maxWidth: 900,
+              fontSize: 20,
+              lineHeight: 2,
+              color: 'rgba(240,240,255,0.55)',
+            }}
+          >
+            I’m Omkar Bhete — a DevOps & Cloud Engineer obsessed with
+            futuristic infrastructure, scalable cloud systems,
+            immersive UI/UX, automation, Kubernetes orchestration,
+            and building digital products engineered for the next era.
+          </motion.p>
+        </motion.div>
+
+        {/* Main Layout */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns:
+              'repeat(auto-fit,minmax(480px,1fr))',
+            gap: 90,
+            alignItems: 'center',
+          }}
+        >
+          {/* LEFT */}
+          <motion.div
+            initial={{ opacity: 0, x: -80 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 1 }}
+            viewport={{ once: true }}
+          >
+            <div
               style={{
-                position: 'absolute', inset: -10,
-                borderRadius: '50%',
-                background: 'conic-gradient(from 0deg, #a855f7, #22d3ee, transparent, #a855f7)',
-                padding: 2,
+                position: 'relative',
+                padding: 50,
+                borderRadius: 36,
+                overflow: 'hidden',
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                backdropFilter: 'blur(24px)',
               }}
             >
-              <div style={{ background: 'var(--bg)', borderRadius: '50%', width: '100%', height: '100%' }} />
-            </motion.div>
-
-            {/* Avatar placeholder (initials) */}
-            <div style={{
-              position: 'absolute', inset: 8,
-              borderRadius: '50%',
-              border: '1px solid rgba(168,85,247,0.25)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'var(--font-disp)',
-              fontSize: 52, fontWeight: 800,
-              background: 'linear-gradient(135deg, rgba(168,85,247,0.1), rgba(34,211,238,0.08))',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-              backdropFilter: 'blur(8px)',
-            } as React.CSSProperties}>
-              OB
-            </div>
-
-            {/* Status dot */}
-            <div style={{
-              position: 'absolute', bottom: 16, right: 16,
-              width: 16, height: 16, borderRadius: '50%',
-              background: '#4ade80',
-              boxShadow: '0 0 10px #4ade80, 0 0 20px #4ade8055',
-              border: '2px solid var(--bg)',
-            }}>
-              <motion.div
-                animate={{ scale: [1, 1.8, 1], opacity: [1, 0, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
+              {/* Grid Glow */}
+              <div
                 style={{
-                  width: '100%', height: '100%', borderRadius: '50%',
-                  background: '#4ade80',
+                  position: 'absolute',
+                  inset: 0,
+                  background:
+                    'linear-gradient(135deg,rgba(168,85,247,0.08),transparent,rgba(34,211,238,0.08))',
                 }}
               />
-            </div>
-          </div>
-        </motion.div>
 
-        {/* Right — summary */}
-        <motion.div
-          ref={rightRef}
-          initial={{ opacity: 0, x: 30 }}
-          animate={rightIn ? { opacity: 1, x: 0 } : {}}
-          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-        >
-          {/* Terminal header */}
-          <div style={{
-            fontFamily: 'var(--font-mono)', fontSize: 11,
-            letterSpacing: '0.18em', color: 'var(--cyan)',
-            marginBottom: 18, display: 'flex', alignItems: 'center', gap: 10,
-          }}>
-            <span style={{ color: '#4ade80' }}>▶</span>
-            <span style={{ opacity: 0.6 }}>cat</span>
-            <span>about.txt</span>
-          </div>
-
-          <p style={{
-            fontSize: 15.5, lineHeight: 1.8,
-            color: 'rgba(240,240,255,0.72)',
-            marginBottom: 28, fontFamily: 'var(--font-body)',
-          }}>
-            {ABOUT_SUMMARY}
-          </p>
-
-          {/* Quick facts chips */}
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            {[
-              { label: 'B.E. / B.Tech', color: '#a855f7' },
-              { label: 'AWS CCP Pursuing', color: '#22d3ee' },
-              { label: 'Solutions Arch. Candidate', color: '#4ade80' },
-              { label: 'Mumbai, India', color: '#fbbf24' },
-            ].map(({ label, color }) => (
-              <span
-                key={label}
+              <div
                 style={{
-                  fontFamily: 'var(--font-mono)', fontSize: 11,
-                  letterSpacing: '0.1em',
-                  padding: '5px 12px', borderRadius: 6,
-                  background: `${color}14`,
-                  border: `1px solid ${color}35`,
-                  color, textShadow: `0 0 8px ${color}55`,
+                  position: 'relative',
+                  zIndex: 2,
                 }}
               >
-                {label}
-              </span>
-            ))}
-          </div>
-        </motion.div>
-      </div>
+                {/* Floating Icons */}
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: 18,
+                    marginBottom: 36,
+                  }}
+                >
+                  {[FiCloud, FiServer, FiDatabase, FiCode, FiCpu, FiLayers].map(
+                    (Icon, i) => (
+                      <motion.div
+                        key={i}
+                        whileHover={{
+                          y: -8,
+                          rotate: 8,
+                          scale: 1.08,
+                        }}
+                        transition={{
+                          type: 'spring',
+                          stiffness: 250,
+                        }}
+                        style={{
+                          width: 62,
+                          height: 62,
+                          borderRadius: 18,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background:
+                            'rgba(255,255,255,0.05)',
+                          border:
+                            '1px solid rgba(255,255,255,0.08)',
+                          color: '#22d3ee',
+                          boxShadow:
+                            '0 0 24px rgba(34,211,238,0.12)',
+                        }}
+                      >
+                        <Icon size={24} />
+                      </motion.div>
+                    )
+                  )}
+                </div>
 
-      {/* Timeline */}
-      <div style={{ maxWidth: 680, margin: '0 auto' }}>
-        <div style={{
-          fontFamily: 'var(--font-mono)', fontSize: 11,
-          letterSpacing: '0.22em', color: 'rgba(240,240,255,0.25)',
-          textTransform: 'uppercase', marginBottom: 40, textAlign: 'center',
-        }}>
-          // journey
+                <h3
+                  style={{
+                    fontSize: 44,
+                    lineHeight: 1.15,
+                    color: '#fff',
+                    marginBottom: 34,
+                    fontWeight: 800,
+                  }}
+                >
+                  Designing
+                  <br />
+                  Intelligent Cloud
+                  <br />
+                  Experiences
+                </h3>
+
+                <p
+                  style={{
+                    color: 'rgba(240,240,255,0.52)',
+                    lineHeight: 2,
+                    marginBottom: 28,
+                    fontSize: 16,
+                  }}
+                >
+                  I engineer scalable cloud-native systems using AWS,
+                  Docker, Kubernetes, Linux, Terraform, CI/CD pipelines,
+                  and modern automation workflows optimized for
+                  production-grade performance and reliability.
+                </p>
+
+                <p
+                  style={{
+                    color: 'rgba(240,240,255,0.52)',
+                    lineHeight: 2,
+                    marginBottom: 40,
+                    fontSize: 16,
+                  }}
+                >
+                  Alongside infrastructure engineering, I craft futuristic
+                  digital experiences with immersive interfaces,
+                  seamless animations, and premium frontend architectures.
+                </p>
+
+                {/* Skills */}
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: 14,
+                  }}
+                >
+                  {SKILLS.map((skill) => (
+                    <motion.div
+                      key={skill}
+                      whileHover={{
+                        scale: 1.1,
+                        y: -3,
+                      }}
+                      style={{
+                        padding: '12px 20px',
+                        borderRadius: 999,
+                        background:
+                          'rgba(168,85,247,0.14)',
+                        border:
+                          '1px solid rgba(168,85,247,0.24)',
+                        color: '#d8b4fe',
+                        fontSize: 12,
+                        fontFamily: 'var(--font-mono)',
+                        cursor: 'default',
+                      }}
+                    >
+                      {skill}
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* RIGHT 3D PHOTO */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.7 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1 }}
+            viewport={{ once: true }}
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              perspective: 2500,
+            }}
+          >
+            <motion.div
+              ref={cardRef}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
+              style={{
+                width: 470,
+                height: 620,
+                borderRadius: 40,
+                position: 'relative',
+                transformStyle: 'preserve-3d',
+                rotateX,
+                rotateY,
+                background:
+                  'linear-gradient(145deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))',
+                border:
+                  '1px solid rgba(255,255,255,0.08)',
+                overflow: 'hidden',
+                backdropFilter: 'blur(30px)',
+                boxShadow:
+                  '0 40px 120px rgba(0,0,0,0.6)',
+              }}
+            >
+              {/* Animated Glow */}
+              <motion.div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background:
+                    'radial-gradient(circle at center, rgba(168,85,247,0.35), transparent 70%)',
+                  filter: 'blur(80px)',
+                  x: glowX,
+                  y: glowY,
+                }}
+              />
+
+              {/* Image */}
+              <img
+                src="/omkar.png"
+                alt="Omkar Bhete"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  position: 'relative',
+                  zIndex: 2,
+                }}
+              />
+
+              {/* Overlay */}
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background:
+                    'linear-gradient(to top, rgba(0,0,0,0.92), transparent 45%)',
+                  zIndex: 3,
+                }}
+              />
+
+              {/* Text */}
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: 34,
+                  left: 34,
+                  zIndex: 4,
+                }}
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  style={{
+                    fontSize: 44,
+                    fontWeight: 900,
+                    color: '#fff',
+                    marginBottom: 10,
+                    lineHeight: 1,
+                  }}
+                >
+                  Omkar
+                  <br />
+                  Bhete
+                </motion.div>
+
+                <div
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    color: '#22d3ee',
+                    letterSpacing: '0.18em',
+                    fontSize: 13,
+                  }}
+                >
+                  DEVOPS • CLOUD • FULL STACK
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
         </div>
-        {TIMELINE.map((t, i) => (
-          <TimelineCard key={t.title} item={t} index={i} />
-        ))}
       </div>
-
-      {/* responsive style */}
-      <style>{`
-        @media (max-width: 700px) {
-          .about-grid { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
     </section>
   )
 }

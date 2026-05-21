@@ -32,6 +32,9 @@ html {
 ::-webkit-scrollbar-track { background: var(--bg1); }
 ::-webkit-scrollbar-thumb { background: var(--purple); border-radius: 4px; }
 
+* {
+  cursor: none;
+}
 body {
   background: var(--bg);
   color: var(--white);
